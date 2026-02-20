@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chatbot Sistem Pakar/GA — Rekomendasi Paket Sablon</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f1a2e;
+      --panel2:#0c1526;
+      --line:rgba(255,255,255,.08);
+      --text:#e9eefc;
+      --muted:rgba(233,238,252,.72);
+      --brand:#22c55e;
+      --brand2:#60a5fa;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --bubble:#121f38;
+      --bubble2:#102a1c;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+      --radius2:14px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--font);
+      background: radial-gradient(1200px 800px at 30% 0%, #13264a 0%, var(--bg) 55%, #070b13 100%);
+      color:var(--text);
+    }
+    .wrap{
+      max-width: 980px;
+      margin: 24px auto;
+      padding: 0 14px;
+    }
+    .app{
+      display:grid;
+      grid-template-columns: 300px 1fr;
+      gap:14px;
+    }
+    @media (max-width: 920px){
+      .app{grid-template-columns: 1fr}
+      .side{order:2}
+      .main{order:1}
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .side .card{padding:16px}
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      margin-bottom:12px;
+    }
+    .logo{
+      width:38px;height:38px;border-radius:12px;
+      background: linear-gradient(135deg, rgba(34,197,94,.35), rgba(96,165,250,.25));
+      border:1px solid var(--line);
+      display:grid;place-items:center;
+      font-weight:800;
+    }
+    .title{font-size:14px;font-weight:800;letter-spacing:.2px}
+    .subtitle{font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px}
+    .pillRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--muted);
+    }
+    .side h4{
+      margin:14px 0 8px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:.2px;
+      text-transform:uppercase;
+    }
+    .help{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+    .kbd{
+      display:inline-block;
+      font-size:12px;
+      padding:2px 8px;
+      border-radius:8px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      margin:0 4px;
+    }
+
+    /* Chat area */
+    .main .card{
+      display:flex;
+      flex-direction:column;
+      height: min(78vh, 760px);
+      min-height: 620px;
+    }
+    .topbar{
+      padding:14px 16px;
+      background: rgba(255,255,255,.03);
+      border-bottom: 1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .topbar .left{
+      display:flex;align-items:center;gap:10px;
+    }
+    .statusDot{
+      width:9px;height:9px;border-radius:999px;background: var(--brand);
+      box-shadow: 0 0 0 4px rgba(34,197,94,.12);
+    }
+    .topbar .h{
+      font-weight:900;
+      font-size:13px;
+      letter-spacing:.2px;
+    }
+    .topbar .small{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+    .btnTiny{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding:8px 10px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:800;
+      font-size:12px;
+    }
+    .btnTiny:hover{border-color: rgba(255,255,255,.18)}
+    .chat{
+      padding: 16px;
+      overflow:auto;
+      flex:1;
+      background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.20));
+    }
+    .msgRow{
+      display:flex;
+      margin: 10px 0;
+      gap:10px;
+      align-items:flex-end;
+    }
+    .msgRow.bot{justify-content:flex-start}
+    .msgRow.user{justify-content:flex-end}
+    .avatar{
+      width:28px;height:28px;border-radius:10px;
+      border:1px solid var(--line);
+      display:grid;place-items:center;
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      font-weight:900;
+      font-size:12px;
+      flex:0 0 auto;
+    }
+    .bubble{
+      max-width: 78%;
+      padding: 12px 12px;
+      border-radius: var(--radius2);
+      border:1px solid var(--line);
+      background: var(--bubble);
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+    }
+    .user .bubble{
+      background: linear-gradient(180deg, rgba(34,197,94,.18), rgba(34,197,94,.10));
+      border-color: rgba(34,197,94,.22);
+    }
+    .bubble .meta{
+      font-size:11px;
+      color: var(--muted);
+      margin-top:6px;
+    }
+    .bubble p{
+      margin:0;
+      line-height:1.55;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-size:14px;
+    }
+
+    .chips{
+      display:flex; flex-wrap:wrap; gap:8px;
+      margin-top:10px;
+    }
+    .chip{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding:8px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight:800;
+      font-size:12px;
+    }
+    .chip:hover{border-color: rgba(255,255,255,.18)}
+    .chip.primary{
+      border-color: rgba(34,197,94,.35);
+      background: rgba(34,197,94,.12);
+    }
+    .chip.blue{
+      border-color: rgba(96,165,250,.35);
+      background: rgba(96,165,250,.12);
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .pkg{
+      border:1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,.03);
+    }
+    .pkgHead{
+      display:flex;align-items:center;justify-content:space-between;gap:8px;
+      margin-bottom:8px;
+    }
+    .pkgName{
+      font-weight:900;font-size:13px;
+    }
+    .tag{
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,.02);
+      white-space:nowrap;
+    }
+    .pkgBody{
+      font-size:13px;
+      color: var(--muted);
+      line-height:1.55;
+      white-space:pre-wrap;
+    }
+    .pkgActions{
+      display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight:900;
+      font-size:12px;
+    }
+    .btn:hover{border-color: rgba(255,255,255,.18)}
+    .btn.primary{
+      border-color: rgba(34,197,94,.35);
+      background: rgba(34,197,94,.14);
+    }
+    .btn.blue{
+      border-color: rgba(96,165,250,.35);
+      background: rgba(96,165,250,.14);
+    }
+
+    .composer{
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .composerRow{
+      display:flex; gap:10px; align-items:center;
+    }
+    .input{
+      flex:1;
+      background: rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      color: var(--text);
+      padding: 12px 12px;
+      border-radius: 16px;
+      outline:none;
+      font-size:14px;
+    }
+    .send{
+      background: linear-gradient(180deg, rgba(34,197,94,.22), rgba(34,197,94,.12));
+      border:1px solid rgba(34,197,94,.35);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 16px;
+      cursor:pointer;
+      font-weight:900;
+    }
+    .send:hover{filter: brightness(1.05)}
+    .hint{
+      margin-top:8px;
+      font-size:12px;
+      color: var(--muted);
+    }
+    .warnBar{
+      display:none;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(245,158,11,.35);
+      background: rgba(245,158,11,.10);
+      color: rgba(255,255,255,.92);
+      font-size:12px;
+      line-height:1.5;
+    }
+    a{color:inherit}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="app">
+      <div class="side">
+        <div class="card">
+          <div class="brand">
+            <div class="logo">SP</div>
+            <div>
+              <div class="title">Chatbot Rekomendasi Paket Sablon</div>
+              <div class="subtitle">Flow: tanya kebutuhan → tampil paket → baru kasih kontak admin.</div>
+            </div>
+          </div>
+
+          <div class="pillRow">
+            <span class="pill">Natural</span>
+            <span class="pill">Chip pilihan</span>
+            <span class="pill">Webhook n8n</span>
+            <span class="pill">Production URL</span>
+          </div>
+
+          <h4>Perintah cepat</h4>
+          <div class="help">
+            Ketik <span class="kbd">reset</span> untuk mulai ulang.<br/>
+            Ketik <span class="kbd">kontak</span> untuk minta kontak admin (biasanya setelah rekomendasi paket).
+          </div>
+
+          <h4>Catatan</h4>
+          <div class="help">
+            File ini pakai <b>Production Webhook</b> dan mengirim data via <b>POST JSON</b>.
+            Pastikan workflow n8n sudah <b>Active</b>.
+          </div>
+        </div>
+      </div>
+
+      <div class="main">
+        <div class="card">
+          <div class="topbar">
+            <div class="left">
+              <div class="statusDot"></div>
+              <div>
+                <div class="h">Asisten Sablon</div>
+                <div class="small">Rekomendasi paket + estimasi — lalu kontak admin</div>
+              </div>
+            </div>
+            <button class="btnTiny" id="btnResetTop">Reset</button>
+          </div>
+
+          <div class="chat" id="chat"></div>
+
+          <div class="composer">
+            <div class="composerRow">
+              <input class="input" id="input" placeholder="Ketik jawaban kamu… (misal: 30)" />
+              <button class="send" id="send">Kirim</button>
+            </div>
+            <div class="hint">Tip: kamu bisa klik tombol pilihan (chip) biar cepat.</div>
+            <div class="warnBar" id="corsWarn">
+              ⚠️ Kalau response webhook gagal / kosong, cek:
+              (1) URL webhook benar, (2) workflow aktif (Production),
+              (3) jalankan HTML via Live Server (http://127.0.0.1:5500) biar aman dari masalah file://.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/**
+ * =========================
+ * 1) SET WEBHOOK URL (PRODUCTION)
+ * =========================
+ */
+const WEBHOOK_URL = "http://localhost:5678/webhook/148208e0-40d4-4a1d-a553-fcaf08586d45";
+
+/** Kontak admin (ubah sesuai kebutuhan) */
+const ADMIN_CONTACT = {
+  whatsapp: "082315577167",
+  email: "rangga.bani8@gmail.com"
+};
+
+/** ============= UI Helpers ============= */
+const elChat = document.getElementById("chat");
+const elInput = document.getElementById("input");
+const elSend = document.getElementById("send");
+const elCorsWarn = document.getElementById("corsWarn");
+document.getElementById("btnResetTop").addEventListener("click", () => resetFlow(true));
+
+function scrollBottom(){
+  elChat.scrollTop = elChat.scrollHeight;
+}
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function addMessage(text, who="bot", opts={}){
+  const row = document.createElement("div");
+  row.className = "msgRow " + who;
+
+  if(who === "bot"){
+    const av = document.createElement("div");
+    av.className = "avatar";
+    av.textContent = "AI";
+    row.appendChild(av);
+  }
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  const p = document.createElement("p");
+  p.innerHTML = escapeHtml(text);
+  bubble.appendChild(p);
+
+  if(opts.chips && opts.chips.length){
+    const chipsWrap = document.createElement("div");
+    chipsWrap.className = "chips";
+    opts.chips.forEach(ch => {
+      const b = document.createElement("button");
+      b.className = "chip " + (ch.style || "");
+      b.type = "button";
+      b.textContent = ch.label;
+      b.addEventListener("click", () => ch.onClick(ch.value ?? ch.label));
+      chipsWrap.appendChild(b);
+    });
+    bubble.appendChild(chipsWrap);
+  }
+
+  if(opts.meta){
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    meta.textContent = opts.meta;
+    bubble.appendChild(meta);
+  }
+
+  row.appendChild(bubble);
+
+  if(who === "user"){
+    const av = document.createElement("div");
+    av.className = "avatar";
+    av.textContent = "Kamu";
+    row.appendChild(av);
+  }
+
+  elChat.appendChild(row);
+  scrollBottom();
+  return row;
+}
+
+function addPackageCards(packages){
+  const row = document.createElement("div");
+  row.className = "msgRow bot";
+  const av = document.createElement("div");
+  av.className = "avatar";
+  av.textContent = "AI";
+  row.appendChild(av);
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  const p = document.createElement("p");
+  p.textContent = "Ini beberapa opsi paket yang paling masuk akal buat kamu. Pilih salah satu ya 👇";
+  bubble.appendChild(p);
+
+  const wrap = document.createElement("div");
+  wrap.className = "cards";
+
+  packages.forEach(pkg => {
+    const card = document.createElement("div");
+    card.className = "pkg";
+
+    const head = document.createElement("div");
+    head.className = "pkgHead";
+    const name = document.createElement("div");
+    name.className = "pkgName";
+    name.textContent = pkg.name;
+    const tag = document.createElement("div");
+    tag.className = "tag";
+    tag.textContent = pkg.tag;
+    head.appendChild(name);
+    head.appendChild(tag);
+    card.appendChild(head);
+
+    const body = document.createElement("div");
+    body.className = "pkgBody";
+    body.textContent = pkg.desc;
+    card.appendChild(body);
+
+    const act = document.createElement("div");
+    act.className = "pkgActions";
+
+    const pick = document.createElement("button");
+    pick.className = "btn primary";
+    pick.type = "button";
+    pick.textContent = "Pilih paket ini";
+    pick.addEventListener("click", () => choosePackage(pkg));
+    act.appendChild(pick);
+
+    const contact = document.createElement("button");
+    contact.className = "btn blue";
+    contact.type = "button";
+    contact.textContent = "Tanya admin";
+    contact.addEventListener("click", () => showContact(true));
+    act.appendChild(contact);
+
+    card.appendChild(act);
+    wrap.appendChild(card);
+  });
+
+  bubble.appendChild(wrap);
+  row.appendChild(bubble);
+  elChat.appendChild(row);
+  scrollBottom();
+}
+
+/** ============= Flow State ============= */
+const state = {
+  step: "qty", // qty -> warna -> kualitas -> bahan -> deadline -> paket -> done
+  data: { qty:null, warna:"", kualitas:"", bahan:"", deadline:"" },
+  packages: [],
+  chosenPackage: null
+};
+
+function resetFlow(withIntro=false){
+  state.step = "qty";
+  state.data = { qty:null, warna:"", kualitas:"", bahan:"", deadline:"" };
+  state.packages = [];
+  state.chosenPackage = null;
+  elCorsWarn.style.display = "none";
+
+  if(withIntro){
+    elChat.innerHTML = "";
+    intro();
+  } else {
+    addMessage("Oke, kita mulai dari awal ya 🙂");
+    askNext();
+  }
+}
+
+function intro(){
+  addMessage(
+    "Halo! Aku bantu cariin paket sablon yang paling pas.\n" +
+    "Biar enak, aku tanya beberapa hal dulu ya—habis itu aku kasih beberapa paket rekomendasi, baru kontak admin kalau mau lanjut."
+  );
+  askNext();
+}
+
+function askNext(){
+  if(state.step === "qty"){
+    addMessage(
+      "Pertama, kamu butuh berapa pcs kaosnya?",
+      "bot",
+      { chips: [
+        {label:"10 pcs", value:"10", style:"primary", onClick: handleUserText},
+        {label:"30 pcs", value:"30", style:"primary", onClick: handleUserText},
+        {label:"50 pcs", value:"50", style:"primary", onClick: handleUserText},
+        {label:"100 pcs", value:"100", style:"primary", onClick: handleUserText},
+      ]}
+    );
+    return;
+  }
+
+  if(state.step === "warna"){
+    addMessage(
+      "Oke. Untuk desainnya, kamu maunya **Full warna** atau **1 warna**?",
+      "bot",
+      { chips: [
+        {label:"Full warna", value:"full warna", style:"primary", onClick: handleUserText},
+        {label:"1 warna", value:"1 warna", style:"primary", onClick: handleUserText},
+      ]}
+    );
+    return;
+  }
+
+  if(state.step === "kualitas"){
+    addMessage(
+      "Kualitas kaosnya mau yang gimana?",
+      "bot",
+      { chips: [
+        {label:"Standar", value:"standar", onClick: handleUserText},
+        {label:"Premium", value:"premium", style:"primary", onClick: handleUserText},
+      ]}
+    );
+    return;
+  }
+
+  if(state.step === "bahan"){
+    addMessage(
+      "Bahan kaosnya prefer yang mana?",
+      "bot",
+      { chips: [
+        {label:"Cotton", value:"cotton", style:"primary", onClick: handleUserText},
+        {label:"Polyester", value:"polyester", onClick: handleUserText},
+        {label:"Combed 30s", value:"combed", onClick: handleUserText},
+      ]}
+    );
+    return;
+  }
+
+  if(state.step === "deadline"){
+    addMessage(
+      "Deadlinenya gimana?",
+      "bot",
+      { chips: [
+        {label:"Normal (aman)", value:"normal", style:"primary", onClick: handleUserText},
+        {label:"Urgent (cepet)", value:"urgent", onClick: handleUserText},
+      ]}
+    );
+    return;
+  }
+
+  if(state.step === "paket"){
+    addPackageCards(state.packages);
+    state.step = "done";
+    return;
+  }
+
+  if(state.step === "done"){
+    addMessage(
+      "Kalau mau ganti input, ketik **reset**.\n" +
+      "Kalau mau langsung ngobrol sama admin, ketik **kontak**."
+    );
+  }
+}
+
+/** ============= Input Parsing ============= */
+function normalizeText(t){ return String(t||"").trim(); }
+function toLower(t){ return normalizeText(t).toLowerCase(); }
+
+function mapWarnaInput(t){
+  const x = toLower(t).replaceAll("_"," ").replaceAll("-"," ").replace(/\s+/g," ");
+  if(x.includes("full")) return "full_color";
+  if(x === "1 warna" || x === "satu warna" || x === "1color" || x === "1 color") return "1_color";
+  if(x === "1" || x === "satu") return "1_color";
+  return null;
+}
+function mapKualitasInput(t){
+  const x = toLower(t);
+  if(x.includes("prem")) return "premium";
+  if(x.includes("stand")) return "standar";
+  return null;
+}
+function mapBahanInput(t){
+  const x = toLower(t);
+  if(x.includes("cot")) return "cotton";
+  if(x.includes("poly")) return "polyester";
+  if(x.includes("combed")) return "combed";
+  return null;
+}
+function mapDeadlineInput(t){
+  const x = toLower(t);
+  if(x.includes("urgent") || x.includes("cepet") || x.includes("cepat")) return "urgent";
+  if(x.includes("normal") || x.includes("aman") || x.includes("biasa")) return "normal";
+  return null;
+}
+
+/** ============= Webhook Call (POST JSON) ============= */
+async function callWebhook(payload){
+  const res = await fetch(WEBHOOK_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if(!res.ok){
+    throw new Error(`Webhook error ${res.status} ${res.statusText}`);
+  }
+
+  // Pastikan n8n mengembalikan JSON object
+  return await res.json();
+}
+
+function pickStringFromResponse(resp){
+  if(resp == null) return "";
+  if(typeof resp === "string") return resp;
+
+  if(Array.isArray(resp)){
+    const first = resp[0];
+    if(first?.message) return first.message;
+    if(first?.json?.message) return first.json.message;
+    if(first?.result?.message) return first.result.message;
+    return JSON.stringify(first);
+  }
+
+  if(resp.message) return resp.message;
+  if(resp.result?.message) return resp.result.message;
+  if(resp.best?.message) return resp.best.message;
+  return "";
+}
+
+function formatCurrencyIDR(n){
+  if(typeof n !== "number") return "";
+  try{
+    return new Intl.NumberFormat("id-ID").format(Math.round(n));
+  }catch(e){
+    return String(Math.round(n));
+  }
+}
+
+function buildPackagesFromWebhook(resp, baseInput){
+  let best = null;
+  if(resp && typeof resp === "object"){
+    best = resp.best || resp.result?.best || resp.result?.bestOption || null;
+  }
+
+  const qty = baseInput.qty;
+  const warna = baseInput.warna;
+  const kualitas = baseInput.kualitas;
+  const bahan = baseInput.bahan;
+  const deadline = baseInput.deadline;
+
+  const mkDesc = (tech, shirt, days, total, extra="") => {
+    const w = (warna === "full_color") ? "Full warna" : "1 warna";
+    const q = (kualitas === "premium") ? "Premium" : "Standar";
+    const d = (deadline === "urgent") ? "Urgent" : "Normal";
+    const priceLine = (typeof total === "number")
+      ? `Estimasi biaya: Rp ${formatCurrencyIDR(total)}`
+      : `Estimasi biaya: (lihat admin)`;
+    return (
+      `• Qty: ${qty} pcs\n` +
+      `• Warna: ${w}\n` +
+      `• Kualitas: ${q}\n` +
+      `• Bahan: ${shirt}\n` +
+      `• Teknik: ${tech}\n` +
+      `• Estimasi: ${days} hari (${d})\n` +
+      `• ${priceLine}` +
+      (extra ? `\n${extra}` : "")
+    );
+  };
+
+  const packages = [];
+  if(best && typeof best === "object"){
+    const tech = best.technique || best.teknik || "—";
+    const shirt = best.shirt || best.kaos || bahan || "—";
+    const days = best.days ?? best.estimasi ?? 3;
+    const total = (typeof best.total === "number") ? best.total : null;
+    const penalty = (typeof best.penalty === "number") ? best.penalty : 0;
+
+    packages.push({
+      name: "Rekomendasi Utama",
+      tag: "Paling pas",
+      desc: mkDesc(
+        tech,
+        shirt,
+        days,
+        total,
+        penalty ? `⚠️ Catatan: ada penalti deadline (Rp ${formatCurrencyIDR(penalty)})` : ""
+      ),
+      payloadOverride: { technique: tech, shirt }
+    });
+  }
+
+  // alternatif
+  const baseDays = (deadline === "urgent") ? 2 : 3;
+  const baseTotal = (qty||0) * ((kualitas === "premium") ? 52000 : 38000);
+
+  const alt1Tech = (warna === "full_color") ? "DTF / Digital Transfer" : "Rubber";
+  const alt1Shirt = (bahan === "polyester") ? "Polyester" : (bahan === "combed" ? "Combed 30s" : "Cotton");
+  packages.push({
+    name: "Paket Hemat",
+    tag: "Budget-friendly",
+    desc: mkDesc(alt1Tech, alt1Shirt, Math.max(2, baseDays), baseTotal * 0.92, "Cocok kalau mau paling efisien.")
+  });
+
+  const alt2Tech = (warna === "full_color") ? "DTF Premium" : "Plastisol";
+  const alt2Shirt = (kualitas === "premium") ? "Combed 30s Premium" : "Cotton";
+  packages.push({
+    name: "Paket Premium",
+    tag: "Hasil lebih rapi",
+    desc: mkDesc(alt2Tech, alt2Shirt, baseDays + 1, baseTotal * 1.18, "Cocok buat brand / jualan.")
+  });
+
+  return packages.slice(0, 3);
+}
+
+/** ============= Contact & Fallback ============= */
+function showContact(fromButton=false){
+  const lines = [
+    "Siap 🙂 Kalau mau lanjut, kamu bisa hubungi admin:",
+    `📱 WhatsApp: ${ADMIN_CONTACT.whatsapp}`,
+    `✉️ Email: ${ADMIN_CONTACT.email}`,
+    "",
+    "Kalau mau rekomendasi ulang, ketik **reset** ya."
+  ];
+  addMessage(lines.join("\n"));
+  if(fromButton){
+    addMessage("Mau aku bantu tulisin pesan singkat ke admin juga? (ketik: ya / tidak)");
+  }
+}
+
+function unknownTopicReply(){
+  addMessage("Mohon maaf, topik itu belum relevan / jawabannya belum tersedia 🙏\nCoba lanjutkan sesuai pertanyaan sablon ya, atau ketik **reset**.");
+}
+
+/** ============= Main Handler ============= */
+async function handleUserText(raw){
+  const userText = normalizeText(raw);
+  if(!userText) return;
+
+  addMessage(userText, "user", { meta: new Date().toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}) });
+
+  const lower = toLower(userText);
+
+  if(lower === "reset"){
+    resetFlow(false);
+    return;
+  }
+  if(lower.includes("kontak")){
+    showContact(false);
+    return;
+  }
+
+  if(state.step === "qty"){
+    const n = parseInt(lower.replace(/[^\d]/g,""), 10);
+    if(!Number.isFinite(n) || n <= 0){
+      addMessage("Angkanya belum kebaca 😄 Coba isi qty dalam angka ya (misal: 30).");
+      return;
+    }
+    state.data.qty = n;
+    state.step = "warna";
+    addMessage(`Oke, catat **${n} pcs**.`);
+    askNext();
+    return;
+  }
+
+  if(state.step === "warna"){
+    const mapped = mapWarnaInput(userText);
+    if(!mapped){
+      addMessage("Pilih salah satu ya: **Full warna** atau **1 warna** 🙂");
+      return;
+    }
+    state.data.warna = mapped;
+    state.step = "kualitas";
+    addMessage(`Sip. Warna: **${mapped === "full_color" ? "Full warna" : "1 warna"}**.`);
+    askNext();
+    return;
+  }
+
+  if(state.step === "kualitas"){
+    const mapped = mapKualitasInput(userText);
+    if(!mapped){
+      addMessage("Kualitasnya pilih **Standar** atau **Premium** ya 🙂");
+      return;
+    }
+    state.data.kualitas = mapped;
+    state.step = "bahan";
+    addMessage(`Oke, kualitas: **${mapped}**.`);
+    askNext();
+    return;
+  }
+
+  if(state.step === "bahan"){
+    const mapped = mapBahanInput(userText);
+    if(!mapped){
+      addMessage("Bahannya pilih **Cotton / Polyester / Combed 30s** ya 🙂");
+      return;
+    }
+    state.data.bahan = mapped;
+    state.step = "deadline";
+    addMessage(`Sip, bahan: **${mapped}**.`);
+    askNext();
+    return;
+  }
+
+  if(state.step === "deadline"){
+    const mapped = mapDeadlineInput(userText);
+    if(!mapped){
+      addMessage("Deadlinenya pilih **Normal** atau **Urgent** ya 🙂");
+      return;
+    }
+    state.data.deadline = mapped;
+
+    addMessage("Oke. Aku hitungin rekomendasi paketnya dulu ya…");
+    try{
+      elCorsWarn.style.display = "none";
+
+      const payload = {
+        qty: state.data.qty,
+        warna: state.data.warna,
+        kualitas: state.data.kualitas,
+        bahan: state.data.bahan,
+        deadline: state.data.deadline
+      };
+
+      const resp = await callWebhook(payload);
+      state.packages = buildPackagesFromWebhook(resp, payload);
+
+      const msg = pickStringFromResponse(resp);
+      if(msg){
+        addMessage(msg);
+      } else {
+        addMessage("Sip! Aku udah dapet beberapa opsi paket buat kamu.");
+      }
+
+      state.step = "paket";
+      askNext();
+
+    } catch(err){
+      elCorsWarn.style.display = "block";
+      addMessage("Aku gagal ambil rekomendasi dari webhook 😅\n" +
+                 "Mohon cek n8n kamu (workflow harus Active) ya.\n" +
+                 "Detail: " + (err?.message || err));
+
+      const payload = {
+        qty: state.data.qty,
+        warna: state.data.warna,
+        kualitas: state.data.kualitas,
+        bahan: state.data.bahan,
+        deadline: state.data.deadline
+      };
+      state.packages = buildPackagesFromWebhook({}, payload);
+      state.step = "paket";
+      askNext();
+    }
+
+    return;
+  }
+
+  if(state.step === "done"){
+    unknownTopicReply();
+    return;
+  }
+
+  unknownTopicReply();
+}
+
+function choosePackage(pkg){
+  state.chosenPackage = pkg;
+
+  addMessage(`Oke, kamu pilih: **${pkg.name}** ✅\nMau lanjut ke kontak admin biar bisa diproses?`, "bot", {
+    chips: [
+      {label:"Ya, kasih kontak", style:"primary", onClick: ()=>showContact(false)},
+      {label:"Lihat paket lain", style:"blue", onClick: ()=>addPackageCards(state.packages)},
+      {label:"Reset", onClick: ()=>resetFlow(false)}
+    ]
+  });
+}
+
+/** ============= Wire Input ============= */
+elSend.addEventListener("click", () => {
+  const t = elInput.value;
+  elInput.value = "";
+  handleUserText(t);
+});
+elInput.addEventListener("keydown", (e) => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    elSend.click();
+  }
+});
+
+// start
+intro();
+</script>
+</body>
+</html>

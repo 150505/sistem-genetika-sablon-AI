@@ -1,0 +1,84 @@
+{
+  "name": "Ai-sablon",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "148208e0-40d4-4a1d-a553-fcaf08586d45",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "448911be-6fb5-464d-a51a-255035b22ffc",
+      "name": "Webhook",
+      "webhookId": "148208e0-40d4-4a1d-a553-fcaf08586d45"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====== Ambil input dari Webhook (query params) ======\nconst q = $json.query || {};\nconst qty = parseInt(q.qty || \"30\", 10);\nconst warna = (q.warna || \"full_color\").toLowerCase();\nconst kualitas = (q.kualitas || \"standard\").toLowerCase();\nconst bahan = (q.bahan || \"cotton\").toLowerCase();\nconst deadline = (q.deadline || \"normal\").toLowerCase();\n\n// Konversi deadline ke max hari\nconst maxDaysByDeadline = {\n  urgent: 2,\n  normal: 4,\n  santai: 7,\n};\nconst maxDays = maxDaysByDeadline[deadline] ?? 4;\n\n// ====== Kandidat pilihan (gen) ======\nconst TECHNIQUES = [\"DTF\", \"PLASTISOL\", \"RUBBER\", \"DISCHARGE\"];\nconst SHIRTS = [\"COMBED_24S\", \"COMBED_30S\", \"CVC\", \"POLYESTER\"];\n\n// ====== Helper random ======\nconst randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;\nconst pick = (arr) => arr[randInt(0, arr.length - 1)];\n\n// ====== \"Biaya\" (simulasi) ======\n// Kamu bisa ganti angka ini biar sesuai realita sablon temanmu.\nfunction baseShirtPrice(shirt) {\n  switch (shirt) {\n    case \"COMBED_30S\": return 45000;\n    case \"COMBED_24S\": return 40000;\n    case \"CVC\": return 35000;\n    case \"POLYESTER\": return 30000;\n    default: return 40000;\n  }\n}\n\nfunction techniquePrintCost(tech, warna, kualitas) {\n  // biaya per pcs (simulasi)\n  let c = 0;\n  if (tech === \"DTF\") c = 15000;\n  if (tech === \"PLASTISOL\") c = 18000;\n  if (tech === \"RUBBER\") c = 12000;\n  if (tech === \"DISCHARGE\") c = 20000;\n\n  // full_color biasanya lebih mahal\n  if (warna === \"full_color\") c += 6000;\n\n  // premium tambah\n  if (kualitas === \"premium\") c += 4000;\n\n  return c;\n}\n\nfunction estimatedDays(tech, qty) {\n  // estimasi hari (simulasi)\n  let d = 0;\n  if (tech === \"DTF\") d = 2;\n  if (tech === \"RUBBER\") d = 3;\n  if (tech === \"PLASTISOL\") d = 4;\n  if (tech === \"DISCHARGE\") d = 5;\n\n  // qty besar tambah waktu\n  if (qty > 50) d += 1;\n  if (qty > 150) d += 2;\n\n  return d;\n}\n\n// ====== Kromosom ======\n// { tech, shirt }\nfunction randomChromosome() {\n  return { tech: pick(TECHNIQUES), shirt: pick(SHIRTS) };\n}\n\nfunction mutate(ch, rate = 0.12) {\n  // mutasi kecil\n  const out = { ...ch };\n  if (Math.random() < rate) out.tech = pick(TECHNIQUES);\n  if (Math.random() < rate) out.shirt = pick(SHIRTS);\n  return out;\n}\n\nfunction crossover(a, b) {\n  // gabungkan gen\n  return {\n    tech: Math.random() < 0.5 ? a.tech : b.tech,\n    shirt: Math.random() < 0.5 ? a.shirt : b.shirt,\n  };\n}\n\n// ====== Fitness ======\n// Tujuan: biaya semurah mungkin + penalti kalau lewat deadline\nfunction evaluate(ch) {\n  const shirtCost = baseShirtPrice(ch.shirt) * qty;\n  const printCost = techniquePrintCost(ch.tech, warna, kualitas) * qty;\n  const days = estimatedDays(ch.tech, qty);\n\n  // penalti keterlambatan (besar biar GA menghindari telat)\n  const late = Math.max(0, days - maxDays);\n  const penalty = late * 500000; // 500rb per hari telat (simulasi)\n\n  // penalti kalau bahan tidak cocok (contoh sederhana)\n  // misal discharge lebih cocok cotton, polyester kena penalti\n  let materialPenalty = 0;\n  if (bahan.includes(\"poly\") && ch.tech === \"DISCHARGE\") materialPenalty = 400000;\n\n  const total = shirtCost + printCost + penalty + materialPenalty;\n\n  // fitness lebih besar = lebih bagus, jadi kita invert\n  const fitness = 1 / (1 + total);\n\n  return { total, days, penalty: penalty + materialPenalty, fitness };\n}\n\n// ====== Seleksi (Tournament) ======\nfunction tournamentSelect(pop, k = 3) {\n  let best = null;\n  for (let i = 0; i < k; i++) {\n    const cand = pop[randInt(0, pop.length - 1)];\n    if (!best || cand.eval.fitness > best.eval.fitness) best = cand;\n  }\n  return best;\n}\n\n// ====== Algoritma Genetika ======\nconst POP_SIZE = 30;\nconst GENERATIONS = 40;\nconst ELITISM = 2; // simpan yang terbaik\nconst MUT_RATE = 0.15;\n\nlet population = Array.from({ length: POP_SIZE }, () => {\n  const ch = randomChromosome();\n  return { ch, eval: evaluate(ch) };\n});\n\nlet bestEver = population[0];\nfor (const p of population) if (p.eval.fitness > bestEver.eval.fitness) bestEver = p;\n\nfor (let gen = 1; gen <= GENERATIONS; gen++) {\n  // sort terbaik\n  population.sort((a, b) => b.eval.fitness - a.eval.fitness);\n\n  // update best\n  if (population[0].eval.fitness > bestEver.eval.fitness) bestEver = population[0];\n\n  // buat generasi baru\n  const newPop = [];\n\n  // elitism\n  for (let i = 0; i < ELITISM; i++) newPop.push(population[i]);\n\n  while (newPop.length < POP_SIZE) {\n    const parentA = tournamentSelect(population, 3);\n    const parentB = tournamentSelect(population, 3);\n    let child = crossover(parentA.ch, parentB.ch);\n    child = mutate(child, MUT_RATE);\n    newPop.push({ ch: child, eval: evaluate(child) });\n  }\n\n  population = newPop;\n}\n\n// ====== Hasil akhir ======\nconst best = bestEver;\nconst teknikLabel = {\n  DTF: \"DTF / Digital Transfer\",\n  PLASTISOL: \"Plastisol\",\n  RUBBER: \"Rubber\",\n  DISCHARGE: \"Discharge\",\n};\nconst kaosLabel = {\n  COMBED_24S: \"Combed 24s\",\n  COMBED_30S: \"Combed 30s\",\n  CVC: \"CVC\",\n  POLYESTER: \"Polyester\",\n};\n\nconst reply =\n`✅ Aku cari opsi terbaik pakai Algoritma Genetika (optimasi biaya + deadline)\n\nHasil optimal:\n🖨 Teknik   : ${teknikLabel[best.ch.tech]}\n👕 Kaos     : ${kaosLabel[best.ch.shirt]}\n⏱ Estimasi : ${best.eval.days} hari (maks deadline: ${maxDays} hari)\n\n💰 Estimasi total biaya: Rp ${best.eval.total.toLocaleString(\"id-ID\")}\n📌 Penalti (kalau ada): Rp ${best.eval.penalty.toLocaleString(\"id-ID\")}\n\n📊 Info GA:\n- Populasi   : ${POP_SIZE}\n- Generasi   : ${GENERATIONS}\n- Fitness    : ${best.eval.fitness.toFixed(8)}\n\nInput kamu:\nqty=${qty}, warna=${warna}, kualitas=${kualitas}, bahan=${bahan}, deadline=${deadline}\n`;\n\n// Output untuk Respond to Webhook\nreturn {\n  ...q,\n  qty,\n  warna,\n  kualitas,\n  bahan,\n  deadline,\n  best: {\n    technique: best.ch.tech,\n    shirt: best.ch.shirt,\n    days: best.eval.days,\n    total: best.eval.total,\n    penalty: best.eval.penalty,\n    fitness: best.eval.fitness,\n  },\n  message: reply,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "9aae819c-0e91-4225-944e-4ffff133ad05",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        0
+      ],
+      "id": "9004d647-0e93-4c55-a6c8-be79e385a5ba",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "552d4d7f-0158-400b-bab7-50884b063e06",
+  "meta": {
+    "instanceId": "54bb87989ddd0fb16daf00d19e055271ffb572cc51266ce5dcd5979127b75b95"
+  },
+  "id": "qIwAaIoQObRk6Djm",
+  "tags": []
+}
