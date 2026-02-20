@@ -1,0 +1,1 @@
+# sistem-genetika-sablon-AI
